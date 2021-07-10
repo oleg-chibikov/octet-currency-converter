@@ -4,6 +4,6 @@
     {
         public string? CurrencyConverterApiKey { get; set; }
 
-        public double MarkupPercentage { get; set; }
+        public double MarkupPercentage { get; set; } = 0.1;
     }
 }

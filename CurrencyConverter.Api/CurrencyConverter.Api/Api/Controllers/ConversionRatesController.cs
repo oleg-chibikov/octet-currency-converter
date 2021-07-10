@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OlegChibikov.OctetInterview.CurrencyConverter.Api.Data;
@@ -20,8 +22,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
         }
 
         [HttpGet("{sourceCurrencyCode}/{targetCurrencyCode}")]
-        public double Get(string sourceCurrencyCode, string targetCurrencyCode)
+        public async Task<double> GetAsync(string sourceCurrencyCode, string targetCurrencyCode, CancellationToken cancellationToken)
         {
+            _ = targetCurrencyCode ?? throw new ArgumentNullException(nameof(targetCurrencyCode));
+            _ = sourceCurrencyCode ?? throw new ArgumentNullException(nameof(sourceCurrencyCode));
+
             var markup = _optionsMonitor.CurrentValue.MarkupPercentage;
             return 1 * markup;
         }

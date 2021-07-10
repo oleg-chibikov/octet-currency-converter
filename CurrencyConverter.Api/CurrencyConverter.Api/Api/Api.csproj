@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 
