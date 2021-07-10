@@ -8,6 +8,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>OlegChibikov.OctetInterview.CurrencyConverter.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>OlegChibikov.OctetInterview.CurrencyConverter.$(MSBuildProjectName)</RootNamespace>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="Properties\stylecop.json" />

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OlegChibikov.OctetInterview.CurrencyConverter.Api.Data;
+using OlegChibikov.OctetInterview.CurrencyConverter.Contracts;
 
 namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
 {
@@ -15,32 +16,39 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
     public class ConversionRatesController : ControllerBase, IDisposable
     {
         const string ConverterUriTemplate = "https://free.currconv.com/api/v7/convert?q={0}_{1}&compact=ultra&apiKey={2}";
-        const int CurrencyCodeLength = 3;
         readonly IOptionsMonitor<Settings> _optionsMonitor;
         readonly HttpClient _httpClient;
+        readonly IConversionRateRepository _conversionRateRepository;
 
-        public ConversionRatesController(IOptionsMonitor<Settings> optionsMonitor, HttpClient httpClient)
+        public ConversionRatesController(IOptionsMonitor<Settings> optionsMonitor, HttpClient httpClient, IConversionRateRepository conversionRateRepository)
         {
             _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _conversionRateRepository = conversionRateRepository ?? throw new ArgumentNullException(nameof(conversionRateRepository));
         }
 
         [HttpGet("{sourceCurrencyCode}/{targetCurrencyCode}")]
         public async Task<double> GetAsync(string sourceCurrencyCode = "AUD", string targetCurrencyCode = "USD", CancellationToken cancellationToken = default)
         {
-            _ = targetCurrencyCode ?? throw new ArgumentNullException(nameof(targetCurrencyCode));
-            _ = sourceCurrencyCode ?? throw new ArgumentNullException(nameof(sourceCurrencyCode));
+            sourceCurrencyCode.VerifyCurrencyCodeLength(nameof(sourceCurrencyCode));
+            targetCurrencyCode.VerifyCurrencyCodeLength(nameof(targetCurrencyCode));
 
-            void VerifyCurrencyCodeLength(string currencyCode)
+            if (sourceCurrencyCode == targetCurrencyCode)
             {
-                if (currencyCode.Length != CurrencyCodeLength)
-                {
-                    throw new ArgumentException(nameof(sourceCurrencyCode) + " length should be 3");
-                }
+                return 1;
             }
 
-            VerifyCurrencyCodeLength(sourceCurrencyCode);
-            VerifyCurrencyCodeLength(targetCurrencyCode);
+            double CalculateRateWithMarkup(double rate)
+            {
+                return rate + (rate * _optionsMonitor.CurrentValue.MarkupPercentage);
+            }
+
+            var cachedValue = _conversionRateRepository.GetRate(sourceCurrencyCode, targetCurrencyCode);
+            if (cachedValue != null && cachedValue.LastUpdateTime.Add(_optionsMonitor.CurrentValue.CacheDuration) > DateTime.Now)
+            {
+                // If the cached value is not older than cache duration, return it without querying the external API
+                return CalculateRateWithMarkup(cachedValue.Rate);
+            }
 
             var response = await _httpClient.GetAsync(
                     new Uri(string.Format(ConverterUriTemplate, sourceCurrencyCode, targetCurrencyCode, _optionsMonitor.CurrentValue.CurrencyConverterApiKey)),
@@ -53,10 +61,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
             var deserializedObject = JsonConvert.DeserializeObject<Dictionary<string, double>>(jsonString);
             if (deserializedObject != null && deserializedObject.TryGetValue($"{sourceCurrencyCode}_{targetCurrencyCode}", out var value))
             {
-                return value + (value * _optionsMonitor.CurrentValue.MarkupPercentage);
+                _conversionRateRepository.SaveRate(sourceCurrencyCode, targetCurrencyCode, value);
+                return CalculateRateWithMarkup(value);
             }
 
-            throw new InvalidOperationException("Incorrect response from external API");
+            throw new InvalidOperationException("There is no data for the requested currency pair");
         }
 
         public void Dispose()

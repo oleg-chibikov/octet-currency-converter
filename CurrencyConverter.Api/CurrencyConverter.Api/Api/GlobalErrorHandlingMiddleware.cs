@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using OlegChibikov.OctetInterview.CurrencyConverter.Api.Data;
+using OlegChibikov.OctetInterview.CurrencyConverter.Contracts;
 
 namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
 {
@@ -16,6 +16,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
             _next = next;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "General exception handler for any exception")]
         public async Task Invoke(HttpContext context)
         {
             _ = context ?? throw new ArgumentNullException(nameof(context));

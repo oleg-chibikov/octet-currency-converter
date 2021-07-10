@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using OlegChibikov.OctetInterview.CurrencyConverter.Api.Data;
+using OlegChibikov.OctetInterview.CurrencyConverter.Contracts;
+using OlegChibikov.OctetInterview.CurrencyConverter.DataAccessLayer;
 
 namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
 {
@@ -25,6 +27,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
 
             services.AddControllers();
             services.AddHttpClient();
+            services.AddSingleton<IConversionRateRepository, ConversionRateRepository>();
 
             services.AddSwaggerGen(c =>
                   {

@@ -4,6 +4,7 @@
     <PackageReference Update="Swashbuckle.AspNetCore" Version="6.1.4" />
     <PackageReference Update="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Update="LiteDB" Version="5.0.10" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="NUnit" Version="3.13.2" />
@@ -13,10 +14,7 @@
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <GlobalPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2" />
-    <GlobalPackageReference Include="Microsoft.CodeQuality.Analyzers" Version="3.3.2" />
-    <GlobalPackageReference Include="Microsoft.NetCore.Analyzers" Version="3.3.2" />
-    <GlobalPackageReference Include="Microsoft.NetFramework.Analyzers" Version="3.3.2" />
+    <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
   </ItemGroup>
 </Project>
