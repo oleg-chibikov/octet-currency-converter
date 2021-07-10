@@ -1,0 +1,3 @@
+<Project ToolsVersion="4.0" Xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Sdk Version="2.0.1" Name="Microsoft.Build.CentralPackageVersions" />
+</Project>

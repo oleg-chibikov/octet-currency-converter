@@ -1,0 +1,15 @@
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="$(MSBuildProjectFile.Contains('Tests'))">$(MSBuildThisFileDirectory)CodeAnalysis.Test.ruleset</CodeAnalysisRuleSet>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblyName>OlegChibikov.OctetInterview.CurrencyConverter.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>OlegChibikov.OctetInterview.CurrencyConverter.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="Properties\stylecop.json" />
+  </ItemGroup>
+</Project>

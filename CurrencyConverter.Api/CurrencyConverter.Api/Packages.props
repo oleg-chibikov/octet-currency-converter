@@ -1,0 +1,19 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
+    <PackageReference Update="Swashbuckle.AspNetCore" Version="5.6.3" />
+    <PackageReference Update="Microsoft.Extensions.Http" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="NUnit" Version="3.12.0" />
+    <PackageReference Update="NUnit3TestAdapter" Version="3.16.1" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.5.0"/>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <GlobalPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1" />
+    <GlobalPackageReference Include="Microsoft.CodeQuality.Analyzers" Version="3.3.1" />
+    <GlobalPackageReference Include="Microsoft.NetCore.Analyzers" Version="3.3.1" />
+    <GlobalPackageReference Include="Microsoft.NetFramework.Analyzers" Version="3.3.1" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
+  </ItemGroup>
+</Project>

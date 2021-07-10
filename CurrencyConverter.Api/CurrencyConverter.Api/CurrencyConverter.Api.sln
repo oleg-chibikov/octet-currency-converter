@@ -3,7 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyConverter.Api", "CurrencyConverter.Api.csproj", "{E97ADFD2-0F2A-4AE2-BCE3-F52A873BB9CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{E97ADFD2-0F2A-4AE2-BCE3-F52A873BB9CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{2E8A43D1-B46A-46FF-B26A-0BF6539492AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41456FC1-25B2-43CD-BF60-C948E0932880}"
+	ProjectSection(SolutionItems) = preProject
+		CodeAnalysis.ruleset = CodeAnalysis.ruleset
+		CodeAnalysis.Test.ruleset = CodeAnalysis.Test.ruleset
+		CurrencyConverter.Api.sln.DotSettings = CurrencyConverter.Api.sln.DotSettings
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		Packages.props = Packages.props
+		stylecop.json = stylecop.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +28,10 @@ Global
 		{E97ADFD2-0F2A-4AE2-BCE3-F52A873BB9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E97ADFD2-0F2A-4AE2-BCE3-F52A873BB9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E97ADFD2-0F2A-4AE2-BCE3-F52A873BB9CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E8A43D1-B46A-46FF-B26A-0BF6539492AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E8A43D1-B46A-46FF-B26A-0BF6539492AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E8A43D1-B46A-46FF-B26A-0BF6539492AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E8A43D1-B46A-46FF-B26A-0BF6539492AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
