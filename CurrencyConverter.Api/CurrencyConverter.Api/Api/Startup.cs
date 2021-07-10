@@ -25,6 +25,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
 
             services.AddControllers();
             services.AddHttpClient();
+
             services.AddSwaggerGen(c =>
                   {
                       c.SwaggerDoc("v1", new OpenApiInfo { Title = "CurrencyConverter.Api", Version = "v1" });
@@ -44,6 +45,8 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CurrencyConverter.Api v1"));
             }
+
+            app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
             app.UseHttpsRedirection();
 

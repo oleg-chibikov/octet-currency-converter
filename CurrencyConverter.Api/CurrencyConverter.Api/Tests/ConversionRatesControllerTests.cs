@@ -15,8 +15,8 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
 {
     public class ConversionRatesControllerTests
     {
-        const string SourceCurrencyCode = "AUD";
-        const string TargetCurrencyCode = "USD";
+        const string SourceCurrencyCode = "NZD";
+        const string TargetCurrencyCode = "JPY";
 
         [SetUp]
         public void Setup()
@@ -35,10 +35,10 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
             var sut = new ConversionRatesController(optionsMonitor, httpClient);
 
             // Act
-            var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode, default).ConfigureAwait(false);
+            var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode).ConfigureAwait(false);
 
             // Assert
-            result.Should().Be(conversionRate * markupPercentage);
+            result.Should().Be(conversionRate + (conversionRate * markupPercentage));
         }
 
         static HttpClient GetMockHttpClient(string sourceCurrencyCode, string targetCurrencyCode, double conversionRate)
