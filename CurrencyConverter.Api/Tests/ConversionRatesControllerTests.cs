@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -18,6 +19,9 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
     {
         const string SourceCurrencyCode = "NZD";
         const string TargetCurrencyCode = "JPY";
+        const decimal MarkupPercentage = 0.2M;
+        const decimal ConversionRate = 0.9M;
+        const decimal CachedRate = 0.6M;
 
         [SetUp]
         public void Setup()
@@ -28,13 +32,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
         public async Task Get_ReturnsOne_When_SourceCurrencyEqualsToTarget()
         {
             // Arrange
-            const double markupPercentage = 0.2;
-            const double conversionRate = 0.9;
-            var optionsMonitor = CreateMockOptionsMonitor(markupPercentage);
-            var httpClient = CreateMockHttpClient(SourceCurrencyCode, SourceCurrencyCode, conversionRate);
+            var optionsMonitor = CreateMockOptionsMonitor(MarkupPercentage);
+            var httpClient = CreateMockHttpClient(SourceCurrencyCode, SourceCurrencyCode, ConversionRate);
             var repository = CreateMockRepository();
 
-            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository);
+            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository, Mock.Of<ILogger<ConversionRatesController>>());
 
             // Act
             var result = await sut.GetAsync(SourceCurrencyCode, SourceCurrencyCode).ConfigureAwait(false);
@@ -47,88 +49,77 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
         public async Task Get_AppliesMarkup()
         {
             // Arrange
-            const double markupPercentage = 0.2;
-            const double conversionRate = 0.9;
-            var optionsMonitor = CreateMockOptionsMonitor(markupPercentage);
-            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, conversionRate);
+            var optionsMonitor = CreateMockOptionsMonitor(MarkupPercentage);
+            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, ConversionRate);
             var repository = CreateMockRepository();
 
-            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository);
+            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository, Mock.Of<ILogger<ConversionRatesController>>());
 
             // Act
             var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode).ConfigureAwait(false);
 
             // Assert
-            result.Should().Be(conversionRate + (conversionRate * markupPercentage));
+            result.Should().Be(ConversionRate.CalculateRateWithMarkup(MarkupPercentage));
         }
 
         [Test]
         public async Task Get_ReturnsNewValue_When_LastUpdateIsWithinCacheDuration_And_IsForDifferentCurrencyPair()
         {
             // Arrange
-            const double markupPercentage = 0.2;
-            const double newRate = 0.9;
-            const double cachedRate = 0.6;
             var cacheDuration = TimeSpan.FromHours(3);
-            var optionsMonitor = CreateMockOptionsMonitor(markupPercentage, cacheDuration);
-            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, newRate);
+            var optionsMonitor = CreateMockOptionsMonitor(MarkupPercentage, cacheDuration);
+            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, ConversionRate);
 
-            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(-1)), cachedRate, "RUR", "EUR");
+            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(-1)), CachedRate, "RUR", "EUR");
 
-            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository);
+            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository, Mock.Of<ILogger<ConversionRatesController>>());
 
             // Act
             var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode).ConfigureAwait(false);
 
             // Assert
-            result.Should().Be(CalculateRateWithMarkup(newRate, markupPercentage));
+            result.Should().Be(ConversionRate.CalculateRateWithMarkup(MarkupPercentage));
         }
 
         [Test]
         public async Task Get_ReturnsCachedValue_When_LastUpdateIsWithinCacheDuration()
         {
             // Arrange
-            const double markupPercentage = 0.2;
-            const double newRate = 0.9;
-            const double cachedRate = 0.6;
             var cacheDuration = TimeSpan.FromHours(3);
-            var optionsMonitor = CreateMockOptionsMonitor(markupPercentage, cacheDuration);
-            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, newRate);
+            var optionsMonitor = CreateMockOptionsMonitor(MarkupPercentage, cacheDuration);
+            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, ConversionRate);
 
-            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(-1)), cachedRate);
+            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(-1)), CachedRate);
 
-            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository);
+            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository, Mock.Of<ILogger<ConversionRatesController>>());
 
             // Act
             var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode).ConfigureAwait(false);
 
             // Assert
-            result.Should().Be(CalculateRateWithMarkup(cachedRate, markupPercentage));
+            result.Should().Be(CachedRate.CalculateRateWithMarkup(MarkupPercentage));
         }
 
         [Test]
         public async Task Get_ReturnsNewValue_When_LastUpdateIsOutsideCacheDuration()
         {
             // Arrange
-            const double markupPercentage = 0.2;
-            const double newRate = 0.9;
-            const double cachedRate = 0.6;
             var cacheDuration = TimeSpan.FromHours(3);
-            var optionsMonitor = CreateMockOptionsMonitor(markupPercentage, cacheDuration);
-            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, newRate);
+            var optionsMonitor = CreateMockOptionsMonitor(MarkupPercentage, cacheDuration);
+            var httpClient = CreateMockHttpClient(SourceCurrencyCode, TargetCurrencyCode, ConversionRate);
 
-            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(1)), cachedRate);
+            var repository = CreateMockRepository(cacheDuration.Add(TimeSpan.FromSeconds(1)), CachedRate);
 
-            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository);
+            var sut = new ConversionRatesController(optionsMonitor, httpClient, repository, Mock.Of<ILogger<ConversionRatesController>>());
 
             // Act
             var result = await sut.GetAsync(SourceCurrencyCode, TargetCurrencyCode).ConfigureAwait(false);
 
             // Assert
-            result.Should().Be(CalculateRateWithMarkup(newRate, markupPercentage));
+            result.Should().Be(ConversionRate.CalculateRateWithMarkup(MarkupPercentage));
         }
 
-        static HttpClient CreateMockHttpClient(string sourceCurrencyCode, string targetCurrencyCode, double conversionRate)
+        static HttpClient CreateMockHttpClient(string sourceCurrencyCode, string targetCurrencyCode, decimal conversionRate)
         {
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handlerMock.Protected()
@@ -149,7 +140,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
 
         static IConversionRateRepository CreateMockRepository(
             TimeSpan? lastUpdateTimeDifferenceWithNow = null,
-            double? rate = null,
+            decimal? rate = null,
             string sourceCurrencyCode = SourceCurrencyCode,
             string targetCurrencyCode = TargetCurrencyCode)
         {
@@ -163,16 +154,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
             return conversionRateRepositoryMock.Object;
         }
 
-        static IOptionsMonitor<AppSettings> CreateMockOptionsMonitor(double markupPercentage = 0.1, TimeSpan? cacheDuration = null)
+        static IOptionsMonitor<AppSettings> CreateMockOptionsMonitor(decimal markupPercentage = 0.1M, TimeSpan? cacheDuration = null)
         {
             var optionsMonitorMock = new Mock<IOptionsMonitor<AppSettings>>();
             optionsMonitorMock.SetupGet(x => x.CurrentValue).Returns(new AppSettings { CacheDuration = cacheDuration ?? TimeSpan.FromHours(1), MarkupPercentage = markupPercentage });
             return optionsMonitorMock.Object;
-        }
-
-        static double CalculateRateWithMarkup(double value, double markup)
-        {
-            return value + (value * markup);
         }
     }
 }

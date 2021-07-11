@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OlegChibikov.OctetInterview.CurrencyConverter.Api.Data;
@@ -19,16 +20,21 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
         readonly IOptionsMonitor<AppSettings> _optionsMonitor;
         readonly HttpClient _httpClient;
         readonly IConversionRateRepository _conversionRateRepository;
+        readonly ILogger<ConversionRatesController> _logger;
 
-        public ConversionRatesController(IOptionsMonitor<AppSettings> optionsMonitor, HttpClient httpClient, IConversionRateRepository conversionRateRepository)
+        // Used just for the fallback case when the API is unavailable
+        readonly Random _randomRateGenerator = new ();
+
+        public ConversionRatesController(IOptionsMonitor<AppSettings> optionsMonitor, HttpClient httpClient, IConversionRateRepository conversionRateRepository, ILogger<ConversionRatesController> logger)
         {
             _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _conversionRateRepository = conversionRateRepository ?? throw new ArgumentNullException(nameof(conversionRateRepository));
+            _logger = logger;
         }
 
         [HttpGet("{sourceCurrencyCode}/{targetCurrencyCode}")]
-        public async Task<double> GetAsync(string sourceCurrencyCode = "AUD", string targetCurrencyCode = "USD", CancellationToken cancellationToken = default)
+        public async Task<decimal> GetAsync(string sourceCurrencyCode = "AUD", string targetCurrencyCode = "USD", CancellationToken cancellationToken = default)
         {
             sourceCurrencyCode.VerifyCurrencyCodeLength(nameof(sourceCurrencyCode));
             targetCurrencyCode.VerifyCurrencyCodeLength(nameof(targetCurrencyCode));
@@ -38,16 +44,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
                 return 1;
             }
 
-            double CalculateRateWithMarkup(double rate)
-            {
-                return rate + (rate * _optionsMonitor.CurrentValue.MarkupPercentage);
-            }
-
             var cachedValue = _conversionRateRepository.GetRate(sourceCurrencyCode, targetCurrencyCode);
             if (cachedValue != null && cachedValue.LastUpdateTime.Add(_optionsMonitor.CurrentValue.CacheDuration) > DateTime.Now)
             {
                 // If the cached value is not older than cache duration, return it without querying the external API
-                return CalculateRateWithMarkup(cachedValue.Rate);
+                return cachedValue.Rate.CalculateRateWithMarkup(_optionsMonitor.CurrentValue.MarkupPercentage);
             }
 
             var response = await _httpClient.GetAsync(
@@ -55,17 +56,26 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            response.EnsureSuccessStatusCode();
-
-            var jsonString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var deserializedObject = JsonConvert.DeserializeObject<Dictionary<string, double>>(jsonString);
-            if (deserializedObject != null && deserializedObject.TryGetValue($"{sourceCurrencyCode}_{targetCurrencyCode}", out var value))
+            decimal value;
+            try
             {
-                _conversionRateRepository.SaveRate(sourceCurrencyCode, targetCurrencyCode, value);
-                return CalculateRateWithMarkup(value);
+                response.EnsureSuccessStatusCode();
+                var jsonString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                var deserializedObject = JsonConvert.DeserializeObject<Dictionary<string, decimal>>(jsonString);
+                if (deserializedObject == null || !deserializedObject.TryGetValue($"{sourceCurrencyCode}_{targetCurrencyCode}", out value))
+                {
+                    throw new InvalidOperationException("There is no data for the requested currency pair");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // just for the sake of the interview task, if the external api is not working - generate a random number
+                _logger.LogWarning(ex, "Falling back to the random rate generation");
+                value = Convert.ToDecimal(_randomRateGenerator.Next(900000, 1200000)) / 1000000;
             }
 
-            throw new InvalidOperationException("There is no data for the requested currency pair");
+            _conversionRateRepository.SaveRate(sourceCurrencyCode, targetCurrencyCode, value);
+            return value.CalculateRateWithMarkup(_optionsMonitor.CurrentValue.MarkupPercentage);
         }
 
         public void Dispose()

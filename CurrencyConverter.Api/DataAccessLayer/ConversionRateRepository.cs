@@ -17,7 +17,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.DataAccessLayer
             _liteCollection = _liteDatabase.GetCollection<ConversionRate>("conversionRates");
         }
 
-        public void SaveRate(string sourceCurrencyCode, string targetCurrencyCode, double rate)
+        public void SaveRate(string sourceCurrencyCode, string targetCurrencyCode, decimal rate)
         {
             _ = targetCurrencyCode ?? throw new ArgumentNullException(nameof(targetCurrencyCode));
             _ = sourceCurrencyCode ?? throw new ArgumentNullException(nameof(sourceCurrencyCode));

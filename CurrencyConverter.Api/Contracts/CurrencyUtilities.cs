@@ -2,7 +2,7 @@
 
 namespace OlegChibikov.OctetInterview.CurrencyConverter.Contracts
 {
-    public static class CurrencyCodeExtensions
+    public static class CurrencyUtilities
     {
         const int CurrencyCodeLength = 3;
 
@@ -14,6 +14,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Contracts
             {
                 throw new BusinessException(name + " length should be 3");
             }
+        }
+
+        public static decimal CalculateRateWithMarkup(this decimal rate, decimal markup)
+        {
+            return Math.Round(rate + (rate * markup), 6);
         }
     }
 }

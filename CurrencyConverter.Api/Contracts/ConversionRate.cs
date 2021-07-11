@@ -9,13 +9,13 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Contracts
         {
         }
 
-        public ConversionRate(double rate, DateTime lastUpdateTime)
+        public ConversionRate(decimal rate, DateTime lastUpdateTime)
         {
             Rate = rate;
             LastUpdateTime = lastUpdateTime;
         }
 
-        public double Rate { get; set; }
+        public decimal Rate { get; set; }
 
         public DateTime LastUpdateTime { get; set; }
     }
