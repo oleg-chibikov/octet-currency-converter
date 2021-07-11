@@ -2,8 +2,10 @@
 
 namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Data
 {
-    public class Settings
+    public class AppSettings
     {
+        public string? WebAppHost { get; set; }
+
         public string? CurrencyConverterApiKey { get; set; }
 
         public double MarkupPercentage { get; set; } = 0.1;

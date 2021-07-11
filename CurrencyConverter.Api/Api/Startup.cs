@@ -26,6 +26,16 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
             services.AddControllers();
+            services.AddCors(
+                options =>
+                {
+                    options.AddDefaultPolicy(
+                        builder =>
+                        {
+                            var settings = Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+                            builder.WithOrigins(settings.WebAppHost).AllowAnyMethod().AllowCredentials().AllowAnyHeader();
+                        });
+                });
             services.AddHttpClient();
             services.AddSingleton<IConversionRateRepository, ConversionRateRepository>();
 
@@ -33,7 +43,7 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
                   {
                       c.SwaggerDoc("v1", new OpenApiInfo { Title = "CurrencyConverter.Api", Version = "v1" });
                   });
-            services.Configure<Settings>(Configuration.GetSection("AppSettings"));
+            services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +59,8 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CurrencyConverter.Api v1"));
             }
 
+            app.UseCors();
+
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
             app.UseHttpsRedirection();
@@ -61,6 +73,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api
             {
                 endpoints.MapControllers();
             });
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
         }
     }
 }

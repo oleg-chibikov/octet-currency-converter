@@ -16,11 +16,11 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Api.Controllers
     public class ConversionRatesController : ControllerBase, IDisposable
     {
         const string ConverterUriTemplate = "https://free.currconv.com/api/v7/convert?q={0}_{1}&compact=ultra&apiKey={2}";
-        readonly IOptionsMonitor<Settings> _optionsMonitor;
+        readonly IOptionsMonitor<AppSettings> _optionsMonitor;
         readonly HttpClient _httpClient;
         readonly IConversionRateRepository _conversionRateRepository;
 
-        public ConversionRatesController(IOptionsMonitor<Settings> optionsMonitor, HttpClient httpClient, IConversionRateRepository conversionRateRepository)
+        public ConversionRatesController(IOptionsMonitor<AppSettings> optionsMonitor, HttpClient httpClient, IConversionRateRepository conversionRateRepository)
         {
             _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));

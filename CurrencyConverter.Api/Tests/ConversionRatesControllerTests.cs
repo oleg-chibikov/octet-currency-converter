@@ -163,10 +163,10 @@ namespace OlegChibikov.OctetInterview.CurrencyConverter.Tests
             return conversionRateRepositoryMock.Object;
         }
 
-        static IOptionsMonitor<Settings> CreateMockOptionsMonitor(double markupPercentage = 0.1, TimeSpan? cacheDuration = null)
+        static IOptionsMonitor<AppSettings> CreateMockOptionsMonitor(double markupPercentage = 0.1, TimeSpan? cacheDuration = null)
         {
-            var optionsMonitorMock = new Mock<IOptionsMonitor<Settings>>();
-            optionsMonitorMock.SetupGet(x => x.CurrentValue).Returns(new Settings { CacheDuration = cacheDuration ?? TimeSpan.FromHours(1), MarkupPercentage = markupPercentage });
+            var optionsMonitorMock = new Mock<IOptionsMonitor<AppSettings>>();
+            optionsMonitorMock.SetupGet(x => x.CurrentValue).Returns(new AppSettings { CacheDuration = cacheDuration ?? TimeSpan.FromHours(1), MarkupPercentage = markupPercentage });
             return optionsMonitorMock.Object;
         }
 
