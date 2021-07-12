@@ -25,7 +25,7 @@
     <h1 v-if="selectedRate">
       1 {{ source }} = {{ selectedRate }} {{ target }}
     </h1>
-    <div v-else-if="ratesAreLoading" class="loader">Loading...</div>
+    <div v-if="ratesAreLoading" class="loader">Loading...</div>
   </div>
 </template>
 
