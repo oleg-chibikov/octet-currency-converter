@@ -18,6 +18,7 @@ const createMockStore = (
       ratesAreLoading: false,
       sourceCurrencyCode: undefined,
       targetCurrencyCode: undefined,
+      cancelTokenSource: undefined,
     },
     mutations: {
       [ConverterMutationTypes.SET_RATE]: jest.fn(),
@@ -178,8 +179,6 @@ describe("CurrencyConverter.vue", () => {
 
     const initialSource = sourceSelect.element.value;
     const initialTarget = targetSelect.element.value;
-
-    console.log(initialSource);
 
     // Act
     await swapButton.trigger("click");

@@ -6,7 +6,7 @@ module.exports = {
   },
 
   extends: [
-    "plugin:vue/vue3-essential",
+    "plugin:vue/recommended",
     "eslint:recommended",
     "@vue/typescript/recommended",
     "@vue/prettier",
@@ -20,6 +20,7 @@ module.exports = {
   rules: {
     "no-console": "off",
     "no-debugger": "off",
+    "@typescript-eslint/no-explicit-any": "off",
   },
 
   overrides: [
@@ -32,13 +33,5 @@ module.exports = {
         jest: true,
       },
     },
-  ],
-
-  extends: [
-    "plugin:vue/recommended",
-    "eslint:recommended",
-    "@vue/typescript/recommended",
-    "@vue/prettier",
-    "@vue/prettier/@typescript-eslint",
   ],
 };

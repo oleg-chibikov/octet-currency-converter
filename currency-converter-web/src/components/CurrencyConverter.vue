@@ -94,19 +94,27 @@ export default class CurrencyConverter extends Vue {
     return this.currencyMappings[this.source];
   }
 
-  onSourceChange(event: any) {
-    const source = event.target.value;
+  onSourceChange(event: Event): void {
+    const eventTarget = event.target as HTMLSelectElement;
+    if (!eventTarget) {
+      return;
+    }
+    const source = eventTarget.value;
     this.setSource(source);
     var target = this.currencyMappings[source][0];
     this.setTarget(target);
     this.requestRate({
-      sourceCurrencyCode: event.target.value,
+      sourceCurrencyCode: source,
       targetCurrencyCode: target,
     });
   }
 
-  onTargetChange(event: any) {
-    const target = event.target.value;
+  onTargetChange(event: Event): void {
+    const eventTarget = event.target as HTMLSelectElement;
+    if (!eventTarget) {
+      return;
+    }
+    const target = eventTarget.value;
     this.setTarget(target);
     this.requestRate({
       sourceCurrencyCode: this.source,
